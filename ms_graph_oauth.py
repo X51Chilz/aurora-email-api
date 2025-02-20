@@ -35,7 +35,8 @@ def get_auth_url():
     """Generate the Microsoft OAuth login URL."""
     CLIENT_ID = "8128da9b-2e36-4d8f-b719-aafcad1362cf"
     REDIRECT_URI = "https://aurora-email-api.onrender.com/callback"
-    return f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=openid%20profile%20email%20https%3A%2F%2Fgraph.microsoft.com%2F.default"
+    TENANT_ID = "common"
+    return f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=openid profile email https://graph.microsoft.com/.default"
 
 # Refresh the access token
 def get_access_token():

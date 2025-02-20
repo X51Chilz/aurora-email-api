@@ -12,7 +12,7 @@ app = FastAPI()
 CLIENT_ID = "8128da9b-2e36-4d8f-b719-aafcad1362cf"
 CLIENT_SECRET = "Dal8Q~s3EnYNAQMyLqJ4E-Lpgi4oHip7QdA9wbmc"
 TENANT_ID = "common"
-REDIRECT_URI = "http://localhost:5000/callback"
+REDIRECT_URI = "https://aurora-email-api.onrender.com/callback"
 TOKEN_FILE = "token_data.json"
 
 GRAPH_API_BASE_URL = "https://graph.microsoft.com/v1.0/me"
