@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from ms_graph_oauth import get_auth_url
 import requests
 import json
 import time
@@ -92,6 +93,12 @@ class ForwardRequest(BaseModel):
     email_id: str
     to: str
     confirm: bool = False
+
+
+@app.get("/login")
+def login():
+    """Redirect user to Microsoft login page."""
+    return {"login_url": get_auth_url()}
 
 @app.post("/send")
 def send_email(request: EmailRequest):
