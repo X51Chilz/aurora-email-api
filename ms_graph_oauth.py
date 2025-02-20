@@ -31,6 +31,10 @@ def save_token(token_data):
     with open(TOKEN_FILE, "w") as f:
         json.dump(token_data, f, indent=4)
 
+def get_auth_url():
+    """Generate the Microsoft OAuth login URL."""
+    return f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={8128da9b-2e36-4d8f-b719-aafcad1362cf}&response_type=code&redirect_uri={https://aurora-email-api.onrender.com/callback}&scope=openid profile email https://graph.microsoft.com/.default"
+
 # Refresh the access token
 def get_access_token():
     token_data = load_token()
