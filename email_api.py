@@ -9,47 +9,35 @@ import os
 app = FastAPI()
 
 # Microsoft Graph API details
-CLIENT_ID = "8128da9b-2e36-4d8f-b719-aafcad1362cf"
-CLIENT_SECRET = "Dal8Q~s3EnYNAQMyLqJ4E-Lpgi4oHip7QdA9wbmc"
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 TENANT_ID = "common"
-REDIRECT_URI = "https://aurora-email-api.onrender.com/callback"
-TOKEN_FILE = "token_data.json"
+REDIRECT_URI = os.getenv("REDIRECT_URI")
+TOKEN_ENV_VAR = "ACCESS_TOKEN"
+REFRESH_TOKEN_ENV_VAR = "REFRESH_TOKEN"
 
 GRAPH_API_BASE_URL = "https://graph.microsoft.com/v1.0/me"
 
-# Load token from file with error handling
+# Load token from environment variables
 def load_token():
-    if not os.path.exists(TOKEN_FILE):
+    access_token = os.getenv(TOKEN_ENV_VAR)
+    refresh_token = os.getenv(REFRESH_TOKEN_ENV_VAR)
+    expires_at = os.getenv("TOKEN_EXPIRES_AT")
+    if not access_token or not expires_at or time.time() > float(expires_at):
         return None
+    return {"access_token": access_token, "refresh_token": refresh_token, "expires_at": float(expires_at)}
 
-    try:
-        with open(TOKEN_FILE, "r") as f:
-            data = json.load(f)
-            if "access_token" in data and "expires_at" in data:
-                return data
-            else:
-                return None  # Invalid token data
-    except (json.JSONDecodeError, FileNotFoundError):
-        return None
-
-# Save token to file
+# Save token to environment variables
 def save_token(token_data):
-    with open(TOKEN_FILE, "w") as f:
-        json.dump(token_data, f, indent=4)
+    os.environ[TOKEN_ENV_VAR] = token_data["access_token"]
+    os.environ[REFRESH_TOKEN_ENV_VAR] = token_data["refresh_token"]
+    os.environ["TOKEN_EXPIRES_AT"] = str(time.time() + token_data["expires_in"])
 
-# Refresh the access token when expired
 def get_access_token():
     token_data = load_token()
-
-    if not token_data or "expires_at" not in token_data:
+    if not token_data:
         raise HTTPException(status_code=401, detail="No valid token found. Please authenticate first.")
-
-    if "access_token" not in token_data or not token_data["access_token"] or time.time() > token_data["expires_at"]:
-        print("🔄 Token expired or missing, attempting refresh...")
-
-        if "refresh_token" not in token_data:
-            raise HTTPException(status_code=401, detail="No refresh token available. Re-authentication required.")
-
+    if time.time() > token_data["expires_at"]:
         refresh_token = token_data["refresh_token"]
         token_url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
         payload = {
@@ -59,20 +47,15 @@ def get_access_token():
             "refresh_token": refresh_token,
             "redirect_uri": REDIRECT_URI
         }
-
         response = requests.post(token_url, data=payload)
-
         if response.status_code == 200:
             new_token_data = response.json()
             new_token_data["expires_at"] = time.time() + new_token_data["expires_in"]
             save_token(new_token_data)
-            print("✅ Token refreshed successfully!")
             return new_token_data["access_token"]
         else:
             raise HTTPException(status_code=401, detail=f"Authentication failed: {response.text}")
-
     return token_data["access_token"]
-
 
 class EmailRequest(BaseModel):
     to: str
@@ -97,8 +80,32 @@ class ForwardRequest(BaseModel):
 
 @app.get("/login")
 def login():
-    """Redirect user to Microsoft login page."""
-    return {"login_url": get_auth_url()}
+    auth_url = (f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/authorize?"
+                f"client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&"
+                f"scope=openid profile email https://graph.microsoft.com/.default")
+    return {"login_url": auth_url}
+
+@app.get("/callback")
+def callback(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code not found.")
+    token_url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
+    payload = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": REDIRECT_URI
+    }
+    response = requests.post(token_url, data=payload)
+    if response.status_code == 200:
+        token_data = response.json()
+        token_data["expires_at"] = time.time() + token_data["expires_in"]
+        save_token(token_data)
+        return {"message": "Authentication successful! Token saved."}
+    else:
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {response.text}")
 
 @app.post("/send")
 def send_email(request: EmailRequest):
@@ -260,3 +267,7 @@ def fetch_leads():
     all_emails = fetch_all_emails()
     lead_emails = [email for email in all_emails["emails"] if email["category"] == "lead"]
     return {"message": "Fetched lead emails successfully.", "leads": lead_emails}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
