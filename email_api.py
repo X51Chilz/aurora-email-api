@@ -82,7 +82,7 @@ class ForwardRequest(BaseModel):
 def login():
     auth_url = (f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/authorize?"
                 f"client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&"
-                f"scope=openid profile email https://graph.microsoft.com/.default")
+                f"scope=openid profile email offline_access https://graph.microsoft.com/.default")
     return {"login_url": auth_url}
 
 @app.get("/callback")
