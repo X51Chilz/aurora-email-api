@@ -82,7 +82,8 @@ class ForwardRequest(BaseModel):
 def login():
     auth_url = (f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/authorize?"
                 f"client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&"
-                f"scope=openid profile email offline_access https://graph.microsoft.com/.default")
+                f"scope=openid profile email offline_access https://graph.microsoft.com/.default&"
+                f"access_type=offline&prompt=consent")
     return {"login_url": auth_url}
 
 @app.get("/callback")
@@ -90,17 +91,26 @@ def callback(request: Request):
     code = request.query_params.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not found.")
+    
     token_url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
     payload = {
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": REDIRECT_URI
+        "redirect_uri": REDIRECT_URI,
+        "scope": "openid profile email offline_access https://graph.microsoft.com/.default"
     }
+    
     response = requests.post(token_url, data=payload)
+    token_data = response.json()
+
+    print("🔹 Token Response:", token_data)
+
     if response.status_code == 200:
-        token_data = response.json()
+        if "refresh_token" not in token_data:
+            raise HTTPException(status_code=400, detail="No refresh_token received from Microsoft.")
+
         token_data["expires_at"] = time.time() + token_data["expires_in"]
         save_token(token_data)
         return {"message": "Authentication successful! Token saved."}
