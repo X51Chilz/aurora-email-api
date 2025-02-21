@@ -16,7 +16,7 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 TOKEN_ENV_VAR = "ACCESS_TOKEN"
 REFRESH_TOKEN_ENV_VAR = "REFRESH_TOKEN"
 
-GRAPH_API_BASE_URL = "https://graph.microsoft.com/v1.0"
+GRAPH_API_BASE_URL = "https://graph.microsoft.com/v1.0/me"
 
 # Load token from environment variables
 def load_token():
