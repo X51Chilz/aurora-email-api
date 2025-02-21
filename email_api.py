@@ -138,7 +138,7 @@ def send_email(request: EmailRequest):
         "Content-Type": "application/json"
     }
 
-    url = f"{GRAPH_API_BASE_URL}/sendMail"
+    url = f"{GRAPH_API_BASE_URL}/me/sendMail"
     email_data = {
         "message": {
             "subject": request.subject,
@@ -265,20 +265,12 @@ def fetch_all_emails():
                 "sender": email["sender"]["emailAddress"],
                 "subject": email["subject"],
                 "body_preview": email["bodyPreview"],
-                "category": "lead" if "lead" in email["subject"].lower() or "opportunity" in email["subject"].lower() else "non-lead"
             }
             for email in emails
         ]
         return {"message": "Fetched and categorized emails successfully.", "emails": categorized_emails}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.json())
-
-
-@app.get("/fetch-leads")
-def fetch_leads():
-    all_emails = fetch_all_emails()
-    lead_emails = [email for email in all_emails["emails"] if email["category"] == "lead"]
-    return {"message": "Fetched lead emails successfully.", "leads": lead_emails}
 
 if __name__ == "__main__":
     import uvicorn
