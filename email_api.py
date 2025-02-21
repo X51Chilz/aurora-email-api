@@ -248,7 +248,8 @@ def fetch_all_emails():
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     }
-    url = f"{GRAPH_API_BASE_URL}/mailFolders/inbox/messages"
+    url = f"{GRAPH_API_BASE_URL}/messages"
+
     params = {
         "$top": 10,
         "$select": "id,sender,subject,bodyPreview",
@@ -271,6 +272,7 @@ def fetch_all_emails():
         return {"message": "Fetched and categorized emails successfully.", "emails": categorized_emails}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.json())
+
 
 @app.get("/fetch-leads")
 def fetch_leads():
