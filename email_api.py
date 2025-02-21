@@ -260,7 +260,3 @@ def fetch_leads():
     all_emails = fetch_all_emails()
     lead_emails = [email for email in all_emails["emails"] if email["category"] == "lead"]
     return {"message": "Fetched lead emails successfully.", "leads": lead_emails}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
