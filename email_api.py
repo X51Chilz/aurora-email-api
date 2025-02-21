@@ -167,7 +167,7 @@ def mark_as_read(request: MarkAsReadRequest):
         "Content-Type": "application/json"
     }
 
-    url = f"{GRAPH_API_BASE_URL}/messages/{request.email_id}"
+    url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}"
     data = {"isRead": True}
     response = requests.patch(url, headers=headers, json=data)
 
@@ -190,7 +190,7 @@ def reply_to_email(request: ReplyRequest):
         "Content-Type": "application/json"
     }
 
-    url = f"{GRAPH_API_BASE_URL}/messages/{request.email_id}/reply"
+    url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}/reply"
     data = {"comment": request.body}
     response = requests.post(url, headers=headers, json=data)
 
@@ -213,7 +213,7 @@ def forward_email(request: ForwardRequest):
         "Content-Type": "application/json"
     }
 
-    url = f"{GRAPH_API_BASE_URL}/messages/{request.email_id}/forward"
+    url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}/forward"
     data = {"toRecipients": [{"emailAddress": {"address": request.to}}]}
     response = requests.post(url, headers=headers, json=data)
 
