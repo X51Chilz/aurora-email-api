@@ -231,7 +231,7 @@ def fetch_specific_email(email_id: str):
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     }
-    url = f"{GRAPH_API_BASE_URL}/mailFolders/inbox/messages/{email_id}"
+    url = f"{GRAPH_API_BASE_URL}/me/messages/{email_id}"
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
