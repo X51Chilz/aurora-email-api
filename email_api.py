@@ -202,7 +202,7 @@ def reply_to_email(request: ReplyRequest):
 
 @app.post("/forward")
 def forward_email(request: ForwardRequest):
-    """Forward an email."""
+    """Forward an email with a custom message."""
     if not request.confirm:
         return {"message": "Are you sure you want to forward this email?", "confirmation_required": True}
 
@@ -214,13 +214,18 @@ def forward_email(request: ForwardRequest):
     }
 
     url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}/forward"
-    data = {"toRecipients": [{"emailAddress": {"address": request.to}}]}
+    data = {
+        "toRecipients": [{"emailAddress": {"address": request.to}}],
+        "comment": request.body
+    }
+    
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code == 202:
-        return {"message": "Email forwarded successfully."}
+        return {"message": "Email forwarded successfully with a custom message."}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.json())
+
 
 
 @app.get("/email/{email_id}")
@@ -268,7 +273,7 @@ def fetch_all_emails():
             }
             for email in emails
         ]
-        return {"message": "Fetched and categorized emails successfully.", "emails": categorized_emails}
+        return {"message": "Fetched emails successfully.", "emails": categorized_emails}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.json())
 
