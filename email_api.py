@@ -264,8 +264,7 @@ def fetch_all_emails():
                 "email_id": email["id"],
                 "sender": email["sender"]["emailAddress"],
                 "subject": email["subject"],
-                "body_preview": email["bodyPreview"],
-                "category": "lead" if "lead" in email["subject"].lower() or "opportunity" in email["subject"].lower() else "non-lead"
+                "body_preview": email["bodyPreview"]
             }
             for email in emails
         ]
