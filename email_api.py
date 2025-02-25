@@ -75,6 +75,7 @@ class ReplyRequest(BaseModel):
 class ForwardRequest(BaseModel):
     email_id: str
     to: str
+    body: str
     confirm: bool = False
 
 
@@ -216,7 +217,7 @@ def forward_email(request: ForwardRequest):
     url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}/forward"
     data = {
         "toRecipients": [{"emailAddress": {"address": request.to}}],
-        "comment": request.body
+        "body": request.body
     }
     
     response = requests.post(url, headers=headers, json=data)
