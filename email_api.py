@@ -254,7 +254,7 @@ def fetch_all_emails():
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     }
-    url = f"https://graph.microsoft.com/v1.0/me/inbox"
+    url = f"https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages"
 
     params = {
         "$top": 10,
