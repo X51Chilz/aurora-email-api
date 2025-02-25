@@ -222,7 +222,7 @@ def forward_email(request: ForwardRequest):
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code == 202:
-        return {"message": "Email forwarded successfully with a custom message."}
+        return {"message": "Email forwarded successfully."}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.json())
 
