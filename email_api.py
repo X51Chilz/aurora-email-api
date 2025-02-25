@@ -215,8 +215,7 @@ def forward_email(request: ForwardRequest):
 
     url = f"{GRAPH_API_BASE_URL}/me/messages/{request.email_id}/forward"
     data = {
-        "toRecipients": [{"emailAddress": {"address": request.to}}],
-        "comment": request.body
+        "toRecipients": [{"emailAddress": {"address": request.to}}]
     }
     
     response = requests.post(url, headers=headers, json=data)
